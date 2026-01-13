@@ -10,6 +10,16 @@ plugins {
 group = "com.brentzey.functional"
 version = "1.0.0-SNAPSHOT"
 
+// Log publishing configuration
+logger.lifecycle("Publishing configuration:")
+logger.lifecycle("  Group: $group")
+logger.lifecycle("  Version: $version")
+logger.lifecycle("  Maven Central Username: ${if (System.getenv("MAVEN_CENTRAL_USERNAME") != null) "SET" else "NOT SET"}")
+logger.lifecycle("  Maven Central Token: ${if (System.getenv("MAVEN_CENTRAL_TOKEN") != null) "SET" else "NOT SET"}")
+logger.lifecycle("  Signing Key ID: ${if (System.getenv("SIGNING_KEY_ID") != null) "SET" else "NOT SET"}")
+logger.lifecycle("  Signing Key: ${if (System.getenv("SIGNING_KEY") != null) "SET (${System.getenv("SIGNING_KEY")?.length} chars)" else "NOT SET"}")
+logger.lifecycle("  Signing Password: ${if (System.getenv("SIGNING_PASSWORD") != null) "SET" else "NOT SET"}")
+
 repositories {
     mavenCentral()
 }
@@ -159,26 +169,17 @@ publishing {
             }
         }
     }
-    
-    repositories {
-        maven {
-            name = "CentralPortal"
-            url = uri("https://central.sonatype.com/api/v1/publisher")
-            credentials {
-                username = System.getenv("MAVEN_CENTRAL_USERNAME") ?: project.findProperty("mavenCentralUsername") as String?
-                password = System.getenv("MAVEN_CENTRAL_TOKEN") ?: project.findProperty("mavenCentralToken") as String?
-            }
-        }
-    }
 }
 
 signing {
-    useInMemoryPgpKeys(
-        System.getenv("SIGNING_KEY_ID"),
-        System.getenv("SIGNING_KEY"),
-        System.getenv("SIGNING_PASSWORD")
-    )
-    sign(publishing.publications)
+    val signingKeyId = System.getenv("SIGNING_KEY_ID")
+    val signingKey = System.getenv("SIGNING_KEY")
+    val signingPassword = System.getenv("SIGNING_PASSWORD")
+    
+    if (signingKeyId != null && signingKey != null && signingPassword != null) {
+        useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
+        sign(publishing.publications)
+    }
 }
 
 // GraalVM Native Image configuration (for applications using this library)
