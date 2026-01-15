@@ -13,5 +13,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "jvm-functional-utils"
+rootProject.name = "functional-utils"
 include("lib")

@@ -25,9 +25,11 @@ if (signingKeyEnv != null) {
     val keyPreview = signingKeyEnv.take(50)
     val hasBeginMarker = keyPreview.contains("-----BEGIN")
     val hasBeginPGP = keyPreview.contains("BEGIN PGP")
+    val hasNewlines = signingKeyEnv.contains("\n")
     logger.lifecycle("  Signing Key: SET (${signingKeyEnv.length} chars)")
     logger.lifecycle("    Preview: ${keyPreview.take(40)}...")
     logger.lifecycle("    Has BEGIN marker: $hasBeginMarker")
+    logger.lifecycle("    Has Newlines: $hasNewlines")
     if (hasBeginPGP) {
         logger.lifecycle("    Format: ASCII armored ✓")
     } else {
@@ -154,16 +156,16 @@ publishing {
     publications {
         withType<MavenPublication> {
             artifactId = when (name) {
-                "kotlinMultiplatform" -> "jvm-functional-utils"
-                "jvm" -> "jvm-functional-utils-jvm"
-                "js" -> "jvm-functional-utils-js"
-                else -> "jvm-functional-utils-$name"
+                "kotlinMultiplatform" -> "functional-utils"
+                "jvm" -> "functional-utils-jvm"
+                "js" -> "functional-utils-js"
+                else -> "functional-utils-$name"
             }
             
             pom {
-                name.set("JVM Functional Utils")
-                description.set("Functional programming utilities for the JVM")
-                url.set("https://github.com/brentmzey/jvm-functional-utils")
+                name.set("Functional Utils")
+                description.set("Functional programming utilities for Kotlin Multiplatform")
+                url.set("https://github.com/brentmzey/functional-utils")
                 
                 licenses {
                     license {
@@ -181,9 +183,9 @@ publishing {
                 }
                 
                 scm {
-                    connection.set("scm:git:git://github.com/brentmzey/jvm-functional-utils.git")
-                    developerConnection.set("scm:git:ssh://github.com/brentmzey/jvm-functional-utils.git")
-                    url.set("https://github.com/brentmzey/jvm-functional-utils")
+                    connection.set("scm:git:git://github.com/brentmzey/functional-utils.git")
+                    developerConnection.set("scm:git:ssh://github.com/brentmzey/functional-utils.git")
+                    url.set("https://github.com/brentmzey/functional-utils")
                 }
             }
         }
@@ -196,21 +198,25 @@ signing {
     val signingPassword = System.getenv("SIGNING_PASSWORD")
 
     if (signingKeyId != null && signingKeyRaw != null && signingPassword != null) {
-        // Reconstruct the PGP key to ensure it's in the correct multi-line format.
-        // GitHub Actions can mangle newlines or store the key as a single line.
-        val keyBody = signingKeyRaw
-            .replace("-----BEGIN PGP PRIVATE KEY BLOCK-----", "")
-            .replace("-----END PGP PRIVATE KEY BLOCK-----", "")
-            .replace("\\s".toRegex(), "")
-        
-        val signingKey = """
-            -----BEGIN PGP PRIVATE KEY BLOCK-----
+        // Use the raw key if it looks valid (has newlines), otherwise try to fix it.
+        // GitHub Actions usually preserves newlines, but sometimes they get lost.
+        val signingKey = if (signingKeyRaw.contains("-----BEGIN PGP PRIVATE KEY BLOCK-----") && signingKeyRaw.trim().lines().size > 1) {
+             logger.lifecycle("  Using provided Signing Key as-is (newlines detected).")
+             signingKeyRaw
+        } else {
+             logger.lifecycle("  Reconstructing Signing Key from single-line input...")
+             val keyBody = signingKeyRaw
+                .replace("-----BEGIN PGP PRIVATE KEY BLOCK-----", "")
+                .replace("-----END PGP PRIVATE KEY BLOCK-----", "")
+                .replace("\\s".toRegex(), "")
             
-            ${keyBody.chunked(64).joinToString("\n")}
-            -----END PGP PRIVATE KEY BLOCK-----
-        """.trimIndent()
-
-        logger.lifecycle("  Reconstructed Signing Key Preview:\n${signingKey.take(120)}...")
+             """
+                -----BEGIN PGP PRIVATE KEY BLOCK-----
+                
+                ${keyBody.chunked(64).joinToString("\n")}
+                -----END PGP PRIVATE KEY BLOCK-----
+            """.trimIndent()
+        }
 
         try {
             useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
@@ -218,8 +224,7 @@ signing {
             logger.lifecycle("✓ Signing configured successfully")
         } catch (e: Exception) {
             logger.error("Failed to configure signing: ${e.message}")
-            logger.error("The PGP key is likely invalid or malformed even after reconstruction.")
-            logger.error("Please verify the SIGNING_KEY secret. It should be an ASCII-armored PGP private key.")
+            logger.error("The PGP key is likely invalid or malformed.")
             throw e
         }
     }

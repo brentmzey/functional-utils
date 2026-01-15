@@ -4,7 +4,7 @@
 
 set -e
 
-DEPLOYMENT_NAME="${1:-jvm-functional-utils-$(date +%s)}"
+DEPLOYMENT_NAME="${1:-functional-utils-$(date +%s)}"
 USERNAME="${MAVEN_CENTRAL_USERNAME}"
 TOKEN="${MAVEN_CENTRAL_TOKEN}"
 
