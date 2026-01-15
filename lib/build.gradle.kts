@@ -198,28 +198,27 @@ signing {
     val signingPassword = System.getenv("SIGNING_PASSWORD")
 
     if (signingKeyId != null && signingKeyRaw != null && signingPassword != null) {
-        // Use the raw key if it looks valid (has newlines), otherwise try to fix it.
-        // GitHub Actions usually preserves newlines, but sometimes they get lost.
-        val signingKey = if (signingKeyRaw.contains("-----BEGIN PGP PRIVATE KEY BLOCK-----") && signingKeyRaw.trim().lines().size > 1) {
-             logger.lifecycle("  Using provided Signing Key as-is (newlines detected).")
-             signingKeyRaw
-        } else {
-             logger.lifecycle("  Reconstructing Signing Key from single-line input...")
-             val keyBody = signingKeyRaw
-                .replace("-----BEGIN PGP PRIVATE KEY BLOCK-----", "")
-                .replace("-----END PGP PRIVATE KEY BLOCK-----", "")
-                .replace("\\s".toRegex(), "")
+        logger.lifecycle("  Processing Signing Key...")
+        
+        // Always normalize the key to ensure it is in the correct format.
+        // This fixes issues where CI secrets might have stripped newlines or added extra whitespace.
+        val keyBody = signingKeyRaw
+            .replace("-----BEGIN PGP PRIVATE KEY BLOCK-----", "")
+            .replace("-----END PGP PRIVATE KEY BLOCK-----", "")
+            .replace("\\s".toRegex(), "") // Remove all whitespace (newlines, spaces, tabs)
+        
+        val signingKey = """
+            -----BEGIN PGP PRIVATE KEY BLOCK-----
             
-             """
-                -----BEGIN PGP PRIVATE KEY BLOCK-----
-                
-                ${keyBody.chunked(64).joinToString("\n")}
-                -----END PGP PRIVATE KEY BLOCK-----
-            """.trimIndent()
-        }
+            ${keyBody.chunked(64).joinToString("\n")}
+            -----END PGP PRIVATE KEY BLOCK-----
+        """.trimIndent() // Ensure no leading indentation but keep internal structure
+
+        // logger.lifecycle("  Normalized Key Preview:\n${signingKey.take(100)}...")
 
         try {
-            useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
+            // usage: useInMemoryPgpKeys(keyId, key, password)
+            useInMemoryPgpKeys(signingKeyId.trim(), signingKey, signingPassword.trim())
             sign(publishing.publications)
             logger.lifecycle("✓ Signing configured successfully")
         } catch (e: Exception) {

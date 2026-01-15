@@ -3,7 +3,7 @@ package com.brentzey.functional
 /**
  * IO Monad for lazy, composable side effects.
  * Multiplatform equivalent to Scala's IO and Cats Effect.
- * 
+ *
  * This type represents a lazy computation that may throw an exception.
  * Nothing happens until you call one of the execution methods.
  */
