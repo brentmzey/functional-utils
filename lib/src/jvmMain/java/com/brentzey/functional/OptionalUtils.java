@@ -14,14 +14,19 @@ public class OptionalUtils {
      * Combines two Optionals. The function is only applied if BOTH are present.
      * Scala equivalent: for { a <- oa; b <- ob } yield f(a, b)
      */
-    public static <A, B, R> Optional<R> zip(Optional<A> oa, Optional<B> ob, BiFunction<A, B, R> combiner) {
+    public static <A, B, R> Optional<R> zip(Optional<A> oa,
+                                            Optional<B> ob,
+                                            BiFunction<A, B, R> combiner) {
         return oa.flatMap(a -> ob.map(b -> combiner.apply(a, b)));
     }
 
     /**
      * Combines three Optionals.
      */
-    public static <A, B, C, R> Optional<R> zip(Optional<A> oa, Optional<B> ob, Optional<C> oc, TriFunction<A, B, C, R> combiner) {
+    public static <A, B, C, R> Optional<R> zip(Optional<A> oa,
+                                               Optional<B> ob,
+                                               Optional<C> oc,
+                                               TriFunction<A, B, C, R> combiner) {
         return oa.flatMap(a ->
                ob.flatMap(b ->
                oc.map(c -> combiner.apply(a, b, c))));
@@ -34,17 +39,16 @@ public class OptionalUtils {
      */
     public static <T> Optional<List<T>> sequence(Collection<Optional<T>> optionals) {
         List<T> result = new ArrayList<>(optionals.size());
-        for (Optional<T> opt : optionals) {
-            if (opt.isEmpty()) return Optional.empty();
-            result.add(opt.get());
-        }
+        optionals.forEach(opt -> opt.ifPresent(result::add));
         return Optional.of(result);
     }
 
     /**
      * Functional "if-else" that returns a value (Java 9+ has ifPresentOrElse, but that returns void).
      */
-    public static <T, R> R fold(Optional<T> opt, Supplier<R> ifEmpty, Function<T, R> ifPresent) {
+    public static <T, R> R fold(Optional<T> opt,
+                                Supplier<R> ifEmpty,
+                                Function<T, R> ifPresent) {
         return opt.map(ifPresent).orElseGet(ifEmpty);
     }
 

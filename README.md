@@ -24,13 +24,13 @@ Java's `Optional` was designed as a return type for "no value," but lacks the co
 
 ## 📊 Quality Metrics
 
-| Metric | Requirement | Actual | Status |
-|--------|-------------|--------|--------|
-| **Test Coverage** | ≥90% | **98.46%** | ✅ **EXCEEDED** |
-| **PMD Violations** | 0 | **0** | ✅ **PERFECT** |
-| **Build Status** | Success | **Success** | ✅ **PASSING** |
-| **Test Count** | Comprehensive | **106 tests** | ✅ **ALL PASSING** |
-| **Multiplatform Tests** | JVM + JS | **158 tests** | ✅ **ALL PASSING** |
+| Metric                  | Requirement   | Actual        | Status            |
+|-------------------------|---------------|---------------|-------------------|
+| **Test Coverage**       | ≥90%          | **98.46%**    | ✅ **EXCEEDED**    |
+| **PMD Violations**      | 0             | **0**         | ✅ **PERFECT**     |
+| **Build Status**        | Success       | **Success**   | ✅ **PASSING**     |
+| **Test Count**          | Comprehensive | **106 tests** | ✅ **ALL PASSING** |
+| **Multiplatform Tests** | JVM + JS      | **158 tests** | ✅ **ALL PASSING** |
 
 ---
 
