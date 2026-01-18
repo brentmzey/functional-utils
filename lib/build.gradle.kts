@@ -1,7 +1,7 @@
 import java.util.Base64
 
 plugins {
-    kotlin("multiplatform") version "2.1.0"
+    kotlin("multiplatform") version "2.3.0"
     id("maven-publish")
     id("signing")
     id("org.jetbrains.kotlinx.kover") version "0.8.3"
