@@ -6,7 +6,7 @@ plugins {
     id("signing")
     id("org.jetbrains.kotlinx.kover") version "0.8.3"
     id("pmd")
-    id("org.graalvm.buildtools.native") version "0.10.3"
+    id("org.graalvm.buildtools.native") version "0.11.3"
 }
 
 group = "com.brentzey.functional"
